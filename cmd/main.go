@@ -10,6 +10,7 @@ import (
 
 func main() {
 	database.ConnectDatabase()
+	database.ValidateDBModels()
 
 	router := gin.Default()
 	router.SetTrustedProxies(nil)

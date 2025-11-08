@@ -9,6 +9,8 @@ import (
 
 	"os"
 
+	"yyphan-pw/backend/internal/models"
+
 	"github.com/joho/godotenv"
 )
 
@@ -19,18 +21,26 @@ func ConnectDatabase() {
 		log.Println("Error reading .env file")
 	}
 
-	dsn := GetDSNFromEnv()
+	dsn := getDSNFromEnv()
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 
 	if err != nil {
-		log.Fatal("Failed to connect to database: \n", err)
+		log.Fatalf("Failed to connect to database: %v", err)
 	}
 
 	DB = db
 	log.Println("Database connected")
 }
 
-func GetDSNFromEnv() string {
+func ValidateDBModels() {
+	if err := DB.AutoMigrate(models.GetAllDBModels()...); err != nil {
+		log.Fatalf("Db model mismatch: %v", err)
+	}
+
+	log.Println("Db model validated")
+}
+
+func getDSNFromEnv() string {
 	host := os.Getenv("DB_HOST")
 	user := os.Getenv("DB_USER")
 	pass := os.Getenv("DB_PASS")
