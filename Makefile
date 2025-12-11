@@ -8,3 +8,6 @@ new:
 
 migrate-up:
 	migrate -path $(MIGRATION_DIR) -database $(DB_DSN) up
+
+migrate-force:
+	migrate -path $(MIGRATION_DIR) -database $(DB_DSN) force $(v)
