@@ -1,85 +1,38 @@
-# Binaries for programs and plugins
 *.exe
 *.exe~
 *.dll
 *.so
 *.dylib
-
-# Test binary, built with `go test -c`
 *.test
 
-# Output of the go coverage tool
-*.out
+main
+app
+server
+my-gin-app
 
-# Dependency directories
-vendor/
-
-# Go workspace file
-go.work
-
-# Build output
-bin/
-dist/
-build/
-
-# Environment files
 .env
 .env.local
-.env.*.local
+.env.development
+.env.test
+.env.production
+!.env.example
 
-# IDE - VSCode
-.vscode/
-*.code-workspace
-
-# IDE - GoLand
 .idea/
 *.iml
 
-# IDE - Vim
-*.swp
-*.swo
-*~
+.vscode/
+*.code-workspace
 
-# IDE - Emacs
-*~
-\#*\#
-.\#*
-
-# OS - macOS
 .DS_Store
-.AppleDouble
-.LSOverride
-._*
 
-# OS - Windows
-Thumbs.db
-ehthumbs.db
-Desktop.ini
-$RECYCLE.BIN/
-
-# OS - Linux
-*~
-.directory
-.Trash-*
-
-# Temporary files
-*.tmp
-*.bak
 *.log
+logs/
 
-# Database files
-*.db
-*.sqlite
-*.sqlite3
+coverage.out
+coverage.html
 
-# Air (live reload tool for Go)
+public/images/*
+!public/images/.gitkeep
+
+dist/
 tmp/
-
-# Debug files
-debug
-__debug_bin
-
-# Local configuration
-config.local.yaml
-config.local.yml
-config.local.json

@@ -1,0 +1,5 @@
+ALTER TABLE posts DROP CONSTRAINT IF EXISTS uq_series_slug;
+
+ALTER TABLE series DROP COLUMN IF EXISTS series_slug;
+
+ALTER TABLE posts DROP COLUMN IF EXISTS post_slug;
