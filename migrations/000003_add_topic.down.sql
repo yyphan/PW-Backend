@@ -1,3 +1,3 @@
 DROP INDEX IF EXISTS idx_series_topic;
 
-ALTER TABLE series DROP COLUMN IF NOT EXISTS topic;
+ALTER TABLE series DROP COLUMN IF EXISTS topic;
