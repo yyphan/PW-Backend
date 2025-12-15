@@ -1,0 +1,1 @@
+ALTER TABLE series_translations ADD COLUMN description varchar(255)

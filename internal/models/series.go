@@ -11,6 +11,7 @@ type SeriesTranslation struct {
 	SeriesID     uint   `gorm:"primaryKey" json:"-"`
 	LanguageCode string `gorm:"primaryKey;size:2" json:"languageCode"`
 	Title        string `gorm:"size:255" json:"title"`
+	Description  string `gorm:"size:255" json:"description"`
 
 	Series Series `gorm:"foreignKey:SeriesID;references:ID" json:"-"`
 }
