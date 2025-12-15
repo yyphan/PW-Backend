@@ -4,16 +4,18 @@ import (
 	"log"
 
 	"yyphan-pw/backend/internal/database"
+	"yyphan-pw/backend/internal/routers"
 
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
 	database.ConnectDatabase()
-	database.ValidateDBModels()
 
 	router := gin.Default()
 	router.SetTrustedProxies(nil)
+
+	routers.InitRouter(router)
 
 	port := "8080"
 

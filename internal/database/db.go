@@ -9,8 +9,6 @@ import (
 
 	"os"
 
-	"yyphan-pw/backend/internal/models"
-
 	"github.com/joho/godotenv"
 )
 
@@ -30,14 +28,6 @@ func ConnectDatabase() {
 
 	DB = db
 	log.Println("Database connected")
-}
-
-func ValidateDBModels() {
-	if err := DB.AutoMigrate(models.GetAllDBModels()...); err != nil {
-		log.Fatalf("Db model mismatch: %v", err)
-	}
-
-	log.Println("Db model validated")
 }
 
 func getDSNFromEnv() string {
