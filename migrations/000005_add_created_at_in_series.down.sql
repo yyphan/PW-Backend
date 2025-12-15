@@ -1,0 +1,1 @@
+ALTER TABLE series_translations DROP COLUMN IF NOT EXISTS created_at;
