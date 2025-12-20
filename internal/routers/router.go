@@ -2,13 +2,20 @@ package routers
 
 import (
 	"yyphan-pw/backend/internal/controllers"
+	"yyphan-pw/backend/internal/middleware"
 
 	"github.com/gin-gonic/gin"
 )
 
 func InitRouter(r *gin.Engine) {
-	api := r.Group("/api")
+	public := r.Group("/api")
 	{
-		api.GET("/series", controllers.GetSeriesList)
+		public.GET("/series", controllers.GetSeriesList)
+	}
+
+	admin := r.Group("/api/admin")
+	admin.Use(middleware.AdminAuth())
+	{
+
 	}
 }
