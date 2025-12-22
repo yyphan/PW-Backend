@@ -16,6 +16,6 @@ func InitRouter(r *gin.Engine) {
 	admin := r.Group("/api/admin")
 	admin.Use(middleware.AdminAuth())
 	{
-
+		admin.POST("/posts", controllers.CreatePost)
 	}
 }
