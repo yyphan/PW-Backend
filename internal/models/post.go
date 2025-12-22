@@ -4,8 +4,8 @@ import "time"
 
 type Post struct {
 	ID          uint   `gorm:"primaryKey" json:"id"`
-	SeriesID    *uint  `json:"seriesId,omitempty"`
-	IdxInSeries *uint  `json:"idxInSeries,omitempty"`
+	SeriesID    uint   `json:"seriesId"`
+	IdxInSeries uint   `json:"idxInSeries"`
 	PostSlug    string `gorm:"column:post_slug;size:255" json:"postSlug"`
 
 	Series Series `gorm:"foreignKey:SeriesID;references:ID" json:"-"`
