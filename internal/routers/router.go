@@ -18,5 +18,7 @@ func InitRouter(r *gin.Engine) {
 	{
 		admin.POST("/posts", controllers.CreatePost)
 		admin.PUT("/posts/:id/translations", controllers.UpsertPostTranslation)
+		admin.PATCH("/series/:id", controllers.PatchSeries)
+		//admin.PUT("/series/:id/translations", controllers.UpsertSeriesTranslation)
 	}
 }

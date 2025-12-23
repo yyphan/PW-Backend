@@ -23,6 +23,28 @@ func GetSeriesList(lang string, topic string) (dto.SeriesListResponse, error) {
 	return response, err
 }
 
+func PatchSeries(id uint, input map[string]interface{}) error {
+	allowedFields := map[string]string{
+		"backgroundImgUrl": "bg_url",
+		"topic":            "topic",
+		"seriesSlug":       "series_slug",
+	}
+
+	cleanUpdates := make(map[string]interface{})
+
+	for jsonKey, dbCol := range allowedFields {
+		if val, exists := input[jsonKey]; exists {
+			cleanUpdates[dbCol] = val
+		}
+	}
+
+	if len(cleanUpdates) == 0 {
+		return nil
+	}
+
+	return updateSeries(id, cleanUpdates)
+}
+
 func createSeries(tx *gorm.DB, backgroundImgUrl string, topic string, seriesSlug string) (uint, error) {
 	return 0, nil
 }
@@ -37,7 +59,7 @@ func countPostsInSeries(tx *gorm.DB, seriesId uint) (int64, error) {
 		Where("series_id = ?", seriesId).
 		Count(&existingPostsCount).Error
 	if err != nil {
-		return 0, fmt.Errorf("error couting posts in series: %w", err)
+		return 0, fmt.Errorf("error counting posts in series: %w", err)
 	}
 
 	return existingPostsCount, nil
@@ -56,4 +78,16 @@ func getSeriesSlug(tx *gorm.DB, seriesID uint) (string, error) {
 	}
 
 	return slug, nil
+}
+
+func updateSeries(id uint, updates map[string]interface{}) error {
+	result := database.DB.Model(&models.Series{}).
+		Where("id = ?", id).
+		Updates(updates)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
 }

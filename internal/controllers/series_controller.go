@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"net/http"
+	"strconv"
 	"yyphan-pw/backend/internal/dto"
 	"yyphan-pw/backend/internal/services"
 
@@ -26,4 +27,32 @@ func GetSeriesList(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, data)
+}
+
+func PatchSeries(c *gin.Context) {
+	seriesIdStr := c.Param("id")
+	seriesId, err := strconv.ParseUint(seriesIdStr, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "[PatchSeries] invalid series id: " + err.Error(),
+		})
+		return
+	}
+
+	var updates map[string]interface{}
+	if err := c.ShouldBindJSON(&updates); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "[PatchSeries] Invalid parameters: " + err.Error(),
+		})
+		return
+	}
+
+	err = services.PatchSeries(uint(seriesId), updates)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "[PatchSeries] Error updating series " + err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"status": "success"})
 }
