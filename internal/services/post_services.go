@@ -15,28 +15,38 @@ func CreatePost(req dto.CreatePostRequest) error {
 	return database.DB.Transaction(func(tx *gorm.DB) error {
 		var markdownFilePath string
 
-		if req.ExistingSeriesID != nil {
-			postId, err := createPost(tx, *req.ExistingSeriesID, req.PostSlug)
+		targetSeriesId := req.ExistingSeriesID
+		if targetSeriesId == nil { // creates new series for this post
+
+			if req.NewSeries == nil {
+				return fmt.Errorf("error [CreatePost]: CreatePostRequest must provide either ExistingSeriesID or NewSeries")
+			}
+
+			var err error
+			targetSeriesId, err = insertSeries(tx, *req.NewSeries, req.LanguageCode)
 			if err != nil {
 				return err
-			} else {
-				seriesSlug, err := getSeriesSlug(tx, *req.ExistingSeriesID)
-				if err != nil {
-					return err
-				}
-
-				markdownFilePath = utils.GetMarkdownRelaPath(req.LanguageCode, seriesSlug, req.PostSlug)
-
-				err = createPostTranslation(tx, *postId, req.LanguageCode, req.Title, markdownFilePath)
-				if err != nil {
-					return err
-				}
 			}
-		} else { // creates new seriest for this post
-
 		}
 
-		err := utils.WriteFile(markdownFilePath, req.MarkdownContent)
+		postId, err := insertPost(tx, *targetSeriesId, req.PostSlug)
+		if err != nil {
+			return err
+		} else {
+			seriesSlug, err := getSeriesSlug(tx, *targetSeriesId)
+			if err != nil {
+				return err
+			}
+
+			markdownFilePath = utils.GetMarkdownRelaPath(req.LanguageCode, seriesSlug, req.PostSlug)
+
+			err = insertPostTranslation(tx, *postId, req.LanguageCode, req.Title, markdownFilePath)
+			if err != nil {
+				return err
+			}
+		}
+
+		err = utils.WriteFile(markdownFilePath, req.MarkdownContent)
 		if err != nil {
 			return err
 		}
@@ -45,7 +55,7 @@ func CreatePost(req dto.CreatePostRequest) error {
 	})
 }
 
-func createPost(tx *gorm.DB, seriesId uint, postSlug string) (*uint, error) {
+func insertPost(tx *gorm.DB, seriesId uint, postSlug string) (*uint, error) {
 	postCount, err := countPostsInSeries(tx, seriesId)
 	if err != nil {
 		return nil, err
@@ -65,7 +75,7 @@ func createPost(tx *gorm.DB, seriesId uint, postSlug string) (*uint, error) {
 	return &post.ID, nil
 }
 
-func createPostTranslation(tx *gorm.DB, postId uint, lang string, title string, markdownFilePath string) error {
+func insertPostTranslation(tx *gorm.DB, postId uint, lang string, title string, markdownFilePath string) error {
 	postTranslation := models.PostTranslation{
 		PostID:           postId,
 		LanguageCode:     lang,
@@ -79,4 +89,29 @@ func createPostTranslation(tx *gorm.DB, postId uint, lang string, title string, 
 	}
 
 	return nil
+}
+
+func insertSeries(tx *gorm.DB, dto dto.NewSeriesRequest, lang string) (*uint, error) {
+	series := models.Series{
+		BackgroundImgURL: dto.BackgroundImgURL,
+		SeriesSlug:       dto.SeriesSlug,
+		Topic:            dto.Topic,
+	}
+
+	if result := tx.Create(&series); result.Error != nil {
+		return nil, fmt.Errorf("error inserting into series: %w", result.Error)
+	}
+
+	seriesTranslation := models.SeriesTranslation{
+		SeriesID:     series.ID, // successful insert above will fill ID
+		LanguageCode: lang,
+		Title:        dto.Title,
+		Description:  dto.Description,
+	}
+
+	if result := tx.Create(&seriesTranslation); result.Error != nil {
+		return nil, fmt.Errorf("error inserting into series_translations: %w", result.Error)
+	}
+
+	return &series.ID, nil
 }
