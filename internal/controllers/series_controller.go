@@ -56,3 +56,31 @@ func PatchSeries(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"status": "success"})
 }
+
+func UpsertSeriesTranslation(c *gin.Context) {
+	var req dto.UpsertSeriesTranslationRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "[UpsertSeriesTranslation] Invalid parameters: " + err.Error(),
+		})
+		return
+	}
+
+	seriesIdStr := c.Param("id")
+	seriesId, err := strconv.ParseUint(seriesIdStr, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "[UpsertSeriesTranslation] invalid series id: " + err.Error(),
+		})
+		return
+	}
+
+	err = services.UpsertSeriesTranslation(uint(seriesId), req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "[UpsertSeriesTranslation] Error upserting series translation " + err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"status": "success"})
+}

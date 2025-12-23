@@ -11,3 +11,9 @@ type SeriesListResponse struct {
 	Title            string `json:"title"`
 	Description      string `json:"description"`
 }
+
+type UpsertSeriesTranslationRequest struct {
+	LanguageCode string `json:"languageCode"`
+	Title        string `json:"title"`
+	Description  string `json:"description"`
+}

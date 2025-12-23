@@ -130,31 +130,6 @@ func insertPostTranslation(tx *gorm.DB, postId uint, lang string, title string, 
 	return nil
 }
 
-func insertSeries(tx *gorm.DB, dto dto.NewSeriesRequest, lang string) (*uint, error) {
-	series := models.Series{
-		BackgroundImgURL: dto.BackgroundImgURL,
-		SeriesSlug:       dto.SeriesSlug,
-		Topic:            dto.Topic,
-	}
-
-	if result := tx.Create(&series); result.Error != nil {
-		return nil, fmt.Errorf("error inserting into series: %w", result.Error)
-	}
-
-	seriesTranslation := models.SeriesTranslation{
-		SeriesID:     series.ID, // successful insert above will fill ID
-		LanguageCode: lang,
-		Title:        dto.Title,
-		Description:  dto.Description,
-	}
-
-	if result := tx.Create(&seriesTranslation); result.Error != nil {
-		return nil, fmt.Errorf("error inserting into series_translations: %w", result.Error)
-	}
-
-	return &series.ID, nil
-}
-
 func getPost(tx *gorm.DB, postId uint) (models.Post, error) {
 	var post models.Post
 	if result := tx.First(&post, postId); result.Error != nil {

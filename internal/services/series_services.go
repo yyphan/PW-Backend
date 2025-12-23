@@ -7,6 +7,7 @@ import (
 	"yyphan-pw/backend/internal/models"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 func GetSeriesList(lang string, topic string) (dto.SeriesListResponse, error) {
@@ -45,12 +46,50 @@ func PatchSeries(id uint, input map[string]interface{}) error {
 	return updateSeries(id, cleanUpdates)
 }
 
-func createSeries(tx *gorm.DB, backgroundImgUrl string, topic string, seriesSlug string) (uint, error) {
-	return 0, nil
+func UpsertSeriesTranslation(seriesId uint, req dto.UpsertSeriesTranslationRequest) error {
+	return database.DB.Transaction(func(tx *gorm.DB) error {
+		seriesTranslation := models.SeriesTranslation{
+			SeriesID:     seriesId,
+			LanguageCode: req.LanguageCode,
+			Title:        req.Title,
+			Description:  req.Description,
+		}
+
+		result := tx.Clauses(clause.OnConflict{
+			UpdateAll: true,
+		}).Create(&seriesTranslation)
+
+		if result.Error != nil {
+			return fmt.Errorf("[UpsertSeriesTranslation]error upserting series translation: %w", result.Error)
+		}
+
+		return nil
+	})
 }
 
-func createSeriesTranslation(tx *gorm.DB, seriesId uint, lang string, title string, description string) error {
-	return nil
+func insertSeries(tx *gorm.DB, dto dto.NewSeriesRequest, lang string) (*uint, error) {
+	series := models.Series{
+		BackgroundImgURL: dto.BackgroundImgURL,
+		SeriesSlug:       dto.SeriesSlug,
+		Topic:            dto.Topic,
+	}
+
+	if result := tx.Create(&series); result.Error != nil {
+		return nil, fmt.Errorf("error inserting into series: %w", result.Error)
+	}
+
+	seriesTranslation := models.SeriesTranslation{
+		SeriesID:     series.ID, // successful insert above will fill ID
+		LanguageCode: lang,
+		Title:        dto.Title,
+		Description:  dto.Description,
+	}
+
+	if result := tx.Create(&seriesTranslation); result.Error != nil {
+		return nil, fmt.Errorf("error inserting into series_translations: %w", result.Error)
+	}
+
+	return &series.ID, nil
 }
 
 func countPostsInSeries(tx *gorm.DB, seriesId uint) (int64, error) {
