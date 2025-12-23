@@ -16,3 +16,9 @@ type NewSeriesRequest struct {
 	Title            string `json:"title"`
 	Description      string `json:"description"`
 }
+
+type UpsertPostTranslationRequest struct {
+	LanguageCode    string `json:"languageCode" binding:"required"`
+	Title           string `json:"title" binding:"required"`
+	MarkdownContent string `json:"markdownContent" binding:"required"`
+}

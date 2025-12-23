@@ -8,6 +8,7 @@ import (
 	"yyphan-pw/backend/internal/utils"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 // Also creates series if not exists
@@ -44,6 +45,44 @@ func CreatePost(req dto.CreatePostRequest) error {
 			if err != nil {
 				return err
 			}
+		}
+
+		err = utils.WriteFile(markdownFilePath, req.MarkdownContent)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+}
+
+func UpsertPostTranslation(postId uint, req dto.UpsertPostTranslationRequest) error {
+	return database.DB.Transaction(func(tx *gorm.DB) error {
+		seriesSlug, err := getSeriesSlug(tx, postId)
+		if err != nil {
+			return err
+		}
+
+		post, err := getPost(tx, postId)
+		if err != nil {
+			return err
+		}
+
+		markdownFilePath := utils.GetMarkdownRelaPath(req.LanguageCode, seriesSlug, post.PostSlug)
+
+		newPostTranslation := models.PostTranslation{
+			PostID:           postId,
+			LanguageCode:     req.LanguageCode,
+			Title:            req.Title,
+			MarkdownFilePath: markdownFilePath,
+		}
+
+		result := tx.Clauses(clause.OnConflict{
+			UpdateAll: true,
+		}).Create(&newPostTranslation)
+
+		if result.Error != nil {
+			return fmt.Errorf("[UpsertPostTranslation]error upserting post translation: %w", result.Error)
 		}
 
 		err = utils.WriteFile(markdownFilePath, req.MarkdownContent)
@@ -114,4 +153,12 @@ func insertSeries(tx *gorm.DB, dto dto.NewSeriesRequest, lang string) (*uint, er
 	}
 
 	return &series.ID, nil
+}
+
+func getPost(tx *gorm.DB, postId uint) (models.Post, error) {
+	var post models.Post
+	if result := tx.First(&post, postId); result.Error != nil {
+		return models.Post{}, fmt.Errorf("error getting post: %w", result.Error)
+	}
+	return post, nil
 }

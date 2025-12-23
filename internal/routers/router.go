@@ -17,5 +17,6 @@ func InitRouter(r *gin.Engine) {
 	admin.Use(middleware.AdminAuth())
 	{
 		admin.POST("/posts", controllers.CreatePost)
+		admin.PUT("/posts/:id/translations", controllers.UpsertPostTranslation)
 	}
 }
