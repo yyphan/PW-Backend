@@ -20,5 +20,10 @@ func InitRouter(r *gin.Engine) {
 		admin.PUT("/posts/:id/translations", controllers.UpsertPostTranslation)
 		admin.PATCH("/series/:id", controllers.PatchSeries)
 		admin.PUT("/series/:id/translations", controllers.UpsertSeriesTranslation)
+
+		admin.POST("/image", controllers.UploadImage)
 	}
+
+	// for hosted images
+	r.Static("/images", "./public/images")
 }
