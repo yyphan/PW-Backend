@@ -20,7 +20,7 @@ func CreatePost(req dto.CreatePostRequest) error {
 		if targetSeriesId == nil { // creates new series for this post
 
 			if req.NewSeries == nil {
-				return fmt.Errorf("error [CreatePost]: CreatePostRequest must provide either ExistingSeriesID or NewSeries")
+				return fmt.Errorf("error: [CreatePost] CreatePostRequest must provide either ExistingSeriesID or NewSeries")
 			}
 
 			var err error
@@ -82,7 +82,7 @@ func UpsertPostTranslation(postId uint, req dto.UpsertPostTranslationRequest) er
 		}).Create(&newPostTranslation)
 
 		if result.Error != nil {
-			return fmt.Errorf("[UpsertPostTranslation]error upserting post translation: %w", result.Error)
+			return fmt.Errorf("[UpsertPostTranslation] error upserting post translation: %w", result.Error)
 		}
 
 		err = utils.WriteFile(markdownFilePath, req.MarkdownContent)

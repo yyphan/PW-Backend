@@ -21,7 +21,7 @@ func InitRouter(r *gin.Engine) {
 		admin.PATCH("/series/:id", controllers.PatchSeries)
 		admin.PUT("/series/:id/translations", controllers.UpsertSeriesTranslation)
 
-		admin.POST("/image", controllers.UploadImage)
+		admin.POST("/images", controllers.UploadImages)
 	}
 
 	// for hosted images

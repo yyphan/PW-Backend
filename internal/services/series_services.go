@@ -60,7 +60,7 @@ func UpsertSeriesTranslation(seriesId uint, req dto.UpsertSeriesTranslationReque
 		}).Create(&seriesTranslation)
 
 		if result.Error != nil {
-			return fmt.Errorf("[UpsertSeriesTranslation]error upserting series translation: %w", result.Error)
+			return fmt.Errorf("[UpsertSeriesTranslation] error upserting series translation: %w", result.Error)
 		}
 
 		return nil

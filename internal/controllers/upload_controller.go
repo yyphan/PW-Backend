@@ -1,37 +1,29 @@
 package controllers
 
 import (
-	"fmt"
 	"net/http"
-	"path/filepath"
-	"time"
+	"yyphan-pw/backend/internal/services"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
-func UploadImage(c *gin.Context) {
-	file, err := c.FormFile("file")
+func UploadImages(c *gin.Context) {
+	form, err := c.MultipartForm()
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"[UploadImage] error": "No file uploaded"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "[UploadImages] Invalid form"})
 		return
 	}
 
-	ext := filepath.Ext(file.Filename)
-	newFileName := uuid.New().String() + ext
+	files := form.File["files"]
+	var urls []string
 
-	now := time.Now()
-	dirPath := fmt.Sprintf("public/images/%d/%02d", now.Year(), now.Month())
-
-	dst := filepath.Join(dirPath, newFileName)
-	if err := c.SaveUploadedFile(file, dst); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"[UploadImage] error": "Failed to save file"})
-		return
+	for _, f := range files {
+		url, err := services.UploadImage(f)
+		if err != nil {
+			continue
+		}
+		urls = append(urls, url)
 	}
 
-	publicURL := fmt.Sprintf("/images/%d/%02d/%s", now.Year(), now.Month(), newFileName)
-
-	c.JSON(http.StatusOK, gin.H{
-		"url": publicURL,
-	})
+	c.JSON(http.StatusOK, gin.H{"urls": urls})
 }
