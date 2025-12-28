@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 	"yyphan-pw/backend/internal/dto"
@@ -14,7 +15,7 @@ func GetSeriesList(c *gin.Context) {
 
 	if err := c.ShouldBindQuery(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "[GetSeriesList] Invalid parameters: " + err.Error(),
+			"error": fmt.Errorf("[GetSeriesList] Invalid parameters: %w", err),
 		})
 		return
 	}
@@ -22,7 +23,7 @@ func GetSeriesList(c *gin.Context) {
 	data, err := services.GetSeriesList(req.Lang, req.Topic)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "[GetSeriesList] Error querying DB " + err.Error(),
+			"error": fmt.Errorf("[GetSeriesList] Error querying DB: %w", err),
 		})
 		return
 	}
@@ -34,7 +35,7 @@ func PatchSeries(c *gin.Context) {
 	seriesId, err := strconv.ParseUint(seriesIdStr, 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "[PatchSeries] invalid series id: " + err.Error(),
+			"error": fmt.Errorf("[PatchSeries] invalid series id: %w", err),
 		})
 		return
 	}
@@ -42,7 +43,7 @@ func PatchSeries(c *gin.Context) {
 	var updates map[string]interface{}
 	if err := c.ShouldBindJSON(&updates); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "[PatchSeries] Invalid parameters: " + err.Error(),
+			"error": fmt.Errorf("[PatchSeries] Invalid parameters: %w", err),
 		})
 		return
 	}
@@ -50,7 +51,7 @@ func PatchSeries(c *gin.Context) {
 	err = services.PatchSeries(uint(seriesId), updates)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "[PatchSeries] Error updating series " + err.Error(),
+			"error": fmt.Errorf("[PatchSeries] Error updating series: %w", err),
 		})
 		return
 	}
@@ -61,7 +62,7 @@ func UpsertSeriesTranslation(c *gin.Context) {
 	var req dto.UpsertSeriesTranslationRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "[UpsertSeriesTranslation] Invalid parameters: " + err.Error(),
+			"error": fmt.Errorf("[UpsertSeriesTranslation] Invalid parameters: %w", err),
 		})
 		return
 	}
@@ -70,7 +71,7 @@ func UpsertSeriesTranslation(c *gin.Context) {
 	seriesId, err := strconv.ParseUint(seriesIdStr, 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "[UpsertSeriesTranslation] invalid series id: " + err.Error(),
+			"error": fmt.Errorf("[UpsertSeriesTranslation] invalid series id: %w", err),
 		})
 		return
 	}
@@ -78,7 +79,7 @@ func UpsertSeriesTranslation(c *gin.Context) {
 	err = services.UpsertSeriesTranslation(uint(seriesId), req)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "[UpsertSeriesTranslation] Error upserting series translation " + err.Error(),
+			"error": fmt.Errorf("[UpsertSeriesTranslation] Error upserting series translation: %w", err),
 		})
 		return
 	}
