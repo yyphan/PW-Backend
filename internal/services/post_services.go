@@ -24,24 +24,24 @@ func CreatePost(req dto.CreatePostRequest) error {
 			}
 
 			var err error
-			targetSeriesId, err = insertSeries(tx, *req.NewSeries, req.LanguageCode)
+			targetSeriesId, err = models.InsertSeries(tx, *req.NewSeries, req.LanguageCode)
 			if err != nil {
 				return err
 			}
 		}
 
-		postId, err := insertPost(tx, *targetSeriesId, req.PostSlug)
+		postId, err := models.InsertPost(tx, *targetSeriesId, req.PostSlug)
 		if err != nil {
 			return err
 		} else {
-			seriesSlug, err := getSeriesSlug(tx, *targetSeriesId)
+			seriesSlug, err := models.GetSeriesSlug(tx, *targetSeriesId)
 			if err != nil {
 				return err
 			}
 
 			markdownFilePath = utils.GetMarkdownRelaPath(req.LanguageCode, seriesSlug, req.PostSlug)
 
-			err = insertPostTranslation(tx, *postId, req.LanguageCode, req.Title, markdownFilePath)
+			err = models.InsertPostTranslation(tx, *postId, req.LanguageCode, req.Title, markdownFilePath)
 			if err != nil {
 				return err
 			}
@@ -58,12 +58,12 @@ func CreatePost(req dto.CreatePostRequest) error {
 
 func UpsertPostTranslation(postId uint, req dto.UpsertPostTranslationRequest) error {
 	return database.DB.Transaction(func(tx *gorm.DB) error {
-		seriesSlug, err := getSeriesSlug(tx, postId)
+		seriesSlug, err := models.GetSeriesSlug(tx, postId)
 		if err != nil {
 			return err
 		}
 
-		post, err := getPost(tx, postId)
+		post, err := models.GetPostById(tx, postId)
 		if err != nil {
 			return err
 		}
@@ -92,48 +92,4 @@ func UpsertPostTranslation(postId uint, req dto.UpsertPostTranslationRequest) er
 
 		return nil
 	})
-}
-
-func insertPost(tx *gorm.DB, seriesId uint, postSlug string) (*uint, error) {
-	postCount, err := countPostsInSeries(tx, seriesId)
-	if err != nil {
-		return nil, err
-	}
-
-	post := models.Post{
-		SeriesID:    seriesId,
-		PostSlug:    postSlug,
-		IdxInSeries: uint(postCount),
-	}
-
-	result := tx.Create(&post)
-	if result.Error != nil {
-		return nil, fmt.Errorf("error inserting into posts: %w", result.Error)
-	}
-
-	return &post.ID, nil
-}
-
-func insertPostTranslation(tx *gorm.DB, postId uint, lang string, title string, markdownFilePath string) error {
-	postTranslation := models.PostTranslation{
-		PostID:           postId,
-		LanguageCode:     lang,
-		Title:            title,
-		MarkdownFilePath: markdownFilePath,
-	}
-
-	err := tx.Create(&postTranslation).Error
-	if err != nil {
-		return fmt.Errorf("error inserting into post_translations: %w", err)
-	}
-
-	return nil
-}
-
-func getPost(tx *gorm.DB, postId uint) (models.Post, error) {
-	var post models.Post
-	if result := tx.First(&post, postId); result.Error != nil {
-		return models.Post{}, fmt.Errorf("error getting post: %w", result.Error)
-	}
-	return post, nil
 }

@@ -46,7 +46,7 @@ func PatchSeries(id uint, input map[string]interface{}) error {
 		return nil
 	}
 
-	return updateSeries(id, cleanUpdates)
+	return models.UpdateSeries(id, cleanUpdates)
 }
 
 func UpsertSeriesTranslation(seriesId uint, req dto.UpsertSeriesTranslationRequest) error {
@@ -68,68 +68,4 @@ func UpsertSeriesTranslation(seriesId uint, req dto.UpsertSeriesTranslationReque
 
 		return nil
 	})
-}
-
-func insertSeries(tx *gorm.DB, dto dto.NewSeriesRequest, lang string) (*uint, error) {
-	series := models.Series{
-		BackgroundImgURL: dto.BackgroundImgURL,
-		SeriesSlug:       dto.SeriesSlug,
-		Topic:            dto.Topic,
-	}
-
-	if result := tx.Create(&series); result.Error != nil {
-		return nil, fmt.Errorf("error inserting into series: %w", result.Error)
-	}
-
-	seriesTranslation := models.SeriesTranslation{
-		SeriesID:     series.ID, // successful insert above will fill ID
-		LanguageCode: lang,
-		Title:        dto.Title,
-		Description:  dto.Description,
-	}
-
-	if result := tx.Create(&seriesTranslation); result.Error != nil {
-		return nil, fmt.Errorf("error inserting into series_translations: %w", result.Error)
-	}
-
-	return &series.ID, nil
-}
-
-func countPostsInSeries(tx *gorm.DB, seriesId uint) (int64, error) {
-	var existingPostsCount int64
-	err := tx.Model(&models.Post{}).
-		Where("series_id = ?", seriesId).
-		Count(&existingPostsCount).Error
-	if err != nil {
-		return 0, fmt.Errorf("error counting posts in series: %w", err)
-	}
-
-	return existingPostsCount, nil
-}
-
-func getSeriesSlug(tx *gorm.DB, seriesID uint) (string, error) {
-	var slug string
-
-	err := tx.Model(&models.Series{}).
-		Select("series_slug").
-		Where("id = ?", seriesID).
-		Take(&slug).Error
-
-	if err != nil {
-		return "", fmt.Errorf("error reading series_slug: %w", err)
-	}
-
-	return slug, nil
-}
-
-func updateSeries(id uint, updates map[string]interface{}) error {
-	result := database.DB.Model(&models.Series{}).
-		Where("id = ?", id).
-		Updates(updates)
-
-	if result.Error != nil {
-		return result.Error
-	}
-
-	return nil
 }
