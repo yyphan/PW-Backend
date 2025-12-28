@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS series_translations (
 );
 
 -- A post is available in multiple languages
-CREATE TABLE IF NOT EXISTS posts_translations (
+CREATE TABLE IF NOT EXISTS post_translations (
     post_id INT NOT NULL,
     language_code VARCHAR(2) NOT NULL,
     title VARCHAR(255) NOT NULL,
@@ -57,8 +57,8 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
--- trigger for the posts_translations table
+-- trigger for the post_translations table
 CREATE TRIGGER update_post_translations_updated_at
-BEFORE UPDATE ON posts_translations
+BEFORE UPDATE ON post_translations
 FOR EACH ROW
 EXECUTE PROCEDURE update_updated_at_column();
