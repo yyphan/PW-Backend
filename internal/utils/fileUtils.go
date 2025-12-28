@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 )
 
-const MdRootFolderKey = "MD_ROOT"
+const MdRootFolderKey = "LOCAL_MD_ROOT"
 
 // e.g. en/mySeries/part-1.md
 func GetMarkdownRelaPath(lang, seriesSlug, postSlug string) string {
