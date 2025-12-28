@@ -1,0 +1,2 @@
+ALTER TABLE posts
+ALTER COLUMN post_slug DROP NOT NULL;
