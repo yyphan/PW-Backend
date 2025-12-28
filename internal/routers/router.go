@@ -11,6 +11,7 @@ func InitRouter(r *gin.Engine) {
 	public := r.Group("/api")
 	{
 		public.GET("/series", controllers.GetSeriesList)
+		public.GET("/post", controllers.GetPost)
 	}
 
 	admin := r.Group("/api/admin")

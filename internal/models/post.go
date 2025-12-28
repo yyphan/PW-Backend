@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 	"time"
+	"yyphan-pw/backend/internal/database"
 
 	"gorm.io/gorm"
 )
@@ -69,4 +70,19 @@ func GetPostById(tx *gorm.DB, postId uint) (Post, error) {
 		return Post{}, fmt.Errorf("error getting post: %w", result.Error)
 	}
 	return post, nil
+}
+
+func GetPostTranslation(seriesSlug string, postSlug string, lang string) (PostTranslation, error) {
+	var postTranslation PostTranslation
+	result := database.DB.
+		Table("post_translations").
+		Joins("JOIN posts ON post_translations.post_id = posts.id").
+		Joins("JOIN series ON posts.series_id = series.id").
+		Where("series_slug = ? AND post_slug = ? AND language_code = ?", seriesSlug, postSlug, lang).
+		First(&postTranslation)
+
+	if result.Error != nil {
+		return PostTranslation{}, fmt.Errorf("error getting post translation: %w", result.Error)
+	}
+	return postTranslation, nil
 }

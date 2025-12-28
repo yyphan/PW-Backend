@@ -13,6 +13,26 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func GetPost(c *gin.Context) {
+	var req dto.GetPostRequest
+	if err := c.ShouldBindQuery(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": fmt.Errorf("[GetPost] invalid reqeust body: %w", err).Error(),
+		})
+		return
+	}
+
+	post, err := services.GetPost(req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": fmt.Errorf("[GetPost] error getting post: %w", err).Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, post)
+}
+
 func CreatePost(c *gin.Context) {
 	fileHeader, err := c.FormFile("markdownFile")
 	if err != nil {
@@ -22,7 +42,7 @@ func CreatePost(c *gin.Context) {
 
 	markdownContent, err := parseMarkdownFile(fileHeader)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Errorf("[CreatePost] error parsing markdown file: %w", err)})
+		c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Errorf("[CreatePost] error parsing markdown file: %w", err).Error()})
 		return
 	}
 
@@ -37,7 +57,7 @@ func CreatePost(c *gin.Context) {
 
 	if err := json.Unmarshal([]byte(metaDataStr), &req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": fmt.Errorf("[CreatePost] invalid reqeust body: %w", err),
+			"error": fmt.Errorf("[CreatePost] invalid reqeust body: %w", err).Error(),
 		})
 	}
 
@@ -48,7 +68,7 @@ func CreatePost(c *gin.Context) {
 	err = services.CreatePost(req)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": fmt.Errorf("[CreatePost] error creating post: %w", err),
+			"error": fmt.Errorf("[CreatePost] error creating post: %w", err).Error(),
 		})
 	}
 
@@ -59,7 +79,7 @@ func UpsertPostTranslation(c *gin.Context) {
 	var req dto.UpsertPostTranslationRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": fmt.Errorf("[UpsertPostTranslation] invalid reqeust body: %w", err),
+			"error": fmt.Errorf("[UpsertPostTranslation] invalid reqeust body: %w", err).Error(),
 		})
 		return
 	}
@@ -68,7 +88,7 @@ func UpsertPostTranslation(c *gin.Context) {
 	postId, err := strconv.ParseUint(postIdStr, 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": fmt.Errorf("[UpsertPostTranslation] invalid post id: %w", err),
+			"error": fmt.Errorf("[UpsertPostTranslation] invalid post id: %w", err).Error(),
 		})
 		return
 	}
@@ -76,7 +96,7 @@ func UpsertPostTranslation(c *gin.Context) {
 	err = services.UpsertPostTranslation(uint(postId), req)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": fmt.Errorf("[UpsertPostTranslation] error upserting post translation: %w", err),
+			"error": fmt.Errorf("[UpsertPostTranslation] error upserting post translation: %w", err).Error(),
 		})
 		return
 	}

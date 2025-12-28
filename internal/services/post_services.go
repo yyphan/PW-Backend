@@ -11,6 +11,24 @@ import (
 	"gorm.io/gorm/clause"
 )
 
+func GetPost(req dto.GetPostRequest) (dto.GetPostResponse, error) {
+	var response dto.GetPostResponse
+
+	translation, err := models.GetPostTranslation(req.SeriesSlug, req.PostSlug, req.LanguageCode)
+	if err != nil {
+		return response, err
+	}
+
+	response.Title = translation.Title
+	response.UpdatedAt = translation.UpdatedAt.Format("2006-01-02")
+	response.MarkdownContent, err = utils.ReadMarkdown(translation.MarkdownFilePath)
+	if err != nil {
+		return response, err
+	}
+
+	return response, nil
+}
+
 // Also creates series if not exists
 func CreatePost(req dto.CreatePostRequest) error {
 	return database.DB.Transaction(func(tx *gorm.DB) error {
@@ -47,7 +65,7 @@ func CreatePost(req dto.CreatePostRequest) error {
 			}
 		}
 
-		err = utils.WriteFile(markdownFilePath, req.MarkdownContent)
+		err = utils.WriteMarkdown(markdownFilePath, req.MarkdownContent)
 		if err != nil {
 			return err
 		}
@@ -85,7 +103,7 @@ func UpsertPostTranslation(postId uint, req dto.UpsertPostTranslationRequest) er
 			return fmt.Errorf("[UpsertPostTranslation] error upserting post translation: %w", result.Error)
 		}
 
-		err = utils.WriteFile(markdownFilePath, req.MarkdownContent)
+		err = utils.WriteMarkdown(markdownFilePath, req.MarkdownContent)
 		if err != nil {
 			return err
 		}

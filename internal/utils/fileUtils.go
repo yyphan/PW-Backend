@@ -13,18 +13,33 @@ func GetMarkdownRelaPath(lang, seriesSlug, postSlug string) string {
 	return filepath.Join(lang, seriesSlug, fmt.Sprintf("%s.md", postSlug))
 }
 
-func WriteFile(relativePath, content string) error {
+func WriteMarkdown(relativePath, content string) error {
 	baseStoragePath := os.Getenv(MdRootFolderKey)
 	fullPath := filepath.Join(baseStoragePath, relativePath)
 
-	dir := filepath.Dir(fullPath)
+	return writeFile(fullPath, content)
+}
+
+func ReadMarkdown(relativePath string) (string, error) {
+	baseStoragePath := os.Getenv(MdRootFolderKey)
+	fullPath := filepath.Join(baseStoragePath, relativePath)
+
+	return readFile(fullPath)
+}
+
+func writeFile(absPath, content string) error {
+	dir := filepath.Dir(absPath)
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return fmt.Errorf("failed to create directory: %w", err)
 	}
+	return os.WriteFile(absPath, []byte(content), 0644)
+}
 
-	if err := os.WriteFile(fullPath, []byte(content), 0644); err != nil {
-		return fmt.Errorf("failed to write file: %w", err)
+func readFile(absPath string) (string, error) {
+	content, err := os.ReadFile(absPath)
+	if err != nil {
+		return "", fmt.Errorf("failed to read file: %w", err)
 	}
 
-	return nil
+	return string(content), nil
 }

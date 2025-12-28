@@ -1,5 +1,17 @@
 package dto
 
+type GetPostRequest struct {
+	LanguageCode string `form:"languageCode" binding:"required"`
+	SeriesSlug   string `form:"seriesSlug" binding:"required"`
+	PostSlug     string `form:"postSlug" binding:"required"`
+}
+
+type GetPostResponse struct {
+	Title           string `json:"title"`
+	UpdatedAt       string `json:"updatedAt"`
+	MarkdownContent string `json:"markdownContent"`
+}
+
 type CreatePostRequest struct {
 	PostSlug         string            `json:"postSlug"`
 	LanguageCode     string            `json:"languageCode" binding:"required"`
