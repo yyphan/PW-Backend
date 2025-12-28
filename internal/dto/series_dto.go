@@ -6,10 +6,10 @@ type SeriesListRequest struct {
 }
 
 type SeriesListResponse struct {
-	BackgroundImgURL string `json:"backgroundImgUrl"`
-	SeriesSlug       string `json:"seriesSlug"`
-	Title            string `json:"title"`
-	Description      string `json:"description"`
+	BgUrl       string `json:"bgUrl"`
+	SeriesSlug  string `json:"seriesSlug"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
 }
 
 type UpsertSeriesTranslationRequest struct {
