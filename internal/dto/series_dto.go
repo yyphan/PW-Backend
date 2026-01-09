@@ -12,10 +12,11 @@ type SeriesListResponse struct {
 }
 
 type SeriesCardDto struct {
-	BgUrl       string `json:"bgUrl"`
-	SeriesSlug  string `json:"seriesSlug"`
-	Title       string `json:"title"`
-	Description string `json:"description"`
+	BgUrl       string   `json:"bgUrl"`
+	SeriesSlug  string   `json:"seriesSlug"`
+	Title       string   `json:"title"`
+	Description string   `json:"description"`
+	PostSlugs   []string `json:"postSlugs"`
 }
 
 type UpsertSeriesTranslationRequest struct {

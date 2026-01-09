@@ -16,6 +16,7 @@ func GetSeriesList(lang string, topic string) (dto.SeriesListResponse, error) {
 	response.Lang = lang
 	response.Topic = topic
 
+	// 1. Fetch Series basic info
 	err := database.DB.
 		Table("series").
 		Select("series.bg_url, series.series_slug, series_translations.title, series_translations.description").
@@ -24,7 +25,53 @@ func GetSeriesList(lang string, topic string) (dto.SeriesListResponse, error) {
 		Order("series_translations.created_at DESC").
 		Scan(&response.Series).Error
 
-	return response, err
+	if err != nil {
+		return response, err
+	}
+
+	if len(response.Series) == 0 {
+		return response, nil
+	}
+
+	// 2. Fetch all post slugs for these series
+	var seriesSlugs []string
+	for _, s := range response.Series {
+		seriesSlugs = append(seriesSlugs, s.SeriesSlug)
+	}
+
+	type PostSlugResult struct {
+		SeriesSlug string
+		PostSlug   string
+	}
+	var postResults []PostSlugResult
+
+	err = database.DB.
+		Table("posts").
+		Select("posts.post_slug, series.series_slug").
+		Joins("JOIN series ON posts.series_id = series.id").
+		Where("series.series_slug IN ?", seriesSlugs).
+		Order("posts.idx_in_series ASC").
+		Scan(&postResults).Error
+
+	if err != nil {
+		return response, fmt.Errorf("error fetching post slugs: %w", err)
+	}
+
+	// 3. Map posts to series
+	postsMap := make(map[string][]string)
+	for _, p := range postResults {
+		postsMap[p.SeriesSlug] = append(postsMap[p.SeriesSlug], p.PostSlug)
+	}
+
+	for i := range response.Series {
+		if slugs, ok := postsMap[response.Series[i].SeriesSlug]; ok {
+			response.Series[i].PostSlugs = slugs
+		} else {
+			response.Series[i].PostSlugs = []string{}
+		}
+	}
+
+	return response, nil
 }
 
 func PatchSeries(id uint, input map[string]interface{}) error {
