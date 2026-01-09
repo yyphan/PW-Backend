@@ -30,7 +30,7 @@ func GetPost(req dto.GetPostRequest) (dto.GetPostResponse, error) {
 }
 
 // Also creates series if not exists
-func CreatePost(req dto.CreatePostRequest) error {
+func CreatePost(req dto.CreatePostData) error {
 	return database.DB.Transaction(func(tx *gorm.DB) error {
 		var markdownFilePath string
 
@@ -74,7 +74,7 @@ func CreatePost(req dto.CreatePostRequest) error {
 	})
 }
 
-func UpsertPostTranslation(postId uint, req dto.UpsertPostTranslationRequest) error {
+func UpsertPostTranslation(postId uint, req dto.UpsertPostTranslationData) error {
 	return database.DB.Transaction(func(tx *gorm.DB) error {
 		seriesSlug, err := models.GetSeriesSlug(tx, postId)
 		if err != nil {

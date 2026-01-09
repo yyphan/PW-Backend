@@ -34,32 +34,28 @@ func GetPost(c *gin.Context) {
 }
 
 func CreatePost(c *gin.Context) {
-	fileHeader, err := c.FormFile("markdownFile")
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "[CreatePost] Markdown file is required"})
+	var multipartReq dto.CreatePostRequest
+	if err := c.ShouldBind(&multipartReq); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": fmt.Errorf("[CreatePost] invalid form data: %w", err).Error(),
+		})
 		return
 	}
 
-	markdownContent, err := parseMarkdownFile(fileHeader)
+	markdownContent, err := parseMarkdownFile(multipartReq.MarkdownFile)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Errorf("[CreatePost] error parsing markdown file: %w", err).Error()})
 		return
 	}
 
-	var req dto.CreatePostRequest
-	req.MarkdownContent = markdownContent
-
-	metaDataStr := c.PostForm("data")
-	if metaDataStr == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "[CreatePost] Metadata is required"})
+	var req dto.CreatePostData
+	if err := json.Unmarshal([]byte(multipartReq.Data), &req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": fmt.Errorf("[CreatePost] invalid data json: %w", err).Error(),
+		})
 		return
 	}
-
-	if err := json.Unmarshal([]byte(metaDataStr), &req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": fmt.Errorf("[CreatePost] invalid reqeust body: %w", err).Error(),
-		})
-	}
+	req.MarkdownContent = markdownContent
 
 	if req.PostSlug == "" {
 		req.PostSlug = "index"
@@ -70,19 +66,35 @@ func CreatePost(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": fmt.Errorf("[CreatePost] error creating post: %w", err).Error(),
 		})
+		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"status": "success"})
 }
 
 func UpsertPostTranslation(c *gin.Context) {
-	var req dto.UpsertPostTranslationRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
+	var multipartReq dto.UpsertPostTranslationRequest
+	if err := c.ShouldBind(&multipartReq); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": fmt.Errorf("[UpsertPostTranslation] invalid reqeust body: %w", err).Error(),
+			"error": fmt.Errorf("[UpsertPostTranslation] invalid form data: %w", err).Error(),
 		})
 		return
 	}
+
+	markdownContent, err := parseMarkdownFile(multipartReq.MarkdownFile)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Errorf("[UpsertPostTranslation] error parsing markdown file: %w", err).Error()})
+		return
+	}
+
+	var req dto.UpsertPostTranslationData
+	if err := json.Unmarshal([]byte(multipartReq.Data), &req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": fmt.Errorf("[UpsertPostTranslation] invalid data json: %w", err).Error(),
+		})
+		return
+	}
+	req.MarkdownContent = markdownContent
 
 	postIdStr := c.Param("id")
 	postId, err := strconv.ParseUint(postIdStr, 10, 64)
