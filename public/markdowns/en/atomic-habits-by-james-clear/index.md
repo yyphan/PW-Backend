@@ -8,8 +8,6 @@
 
 Here are 15 points from this book I would constantly remind myself of:
 
-***
-
 # 1. Assume an Identity
 
 You can acquire a habit by assuming an identity. For example, it would be easier to quit smoking by saying 
