@@ -31,8 +31,5 @@ logs/
 coverage.out
 coverage.html
 
-public/images/*
-!public/images/.gitkeep
-
 dist/
 tmp/
