@@ -1,4 +1,25 @@
 services:
+  backend:
+    container_name: personal-website-backend
+    build: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    environment:
+      - DB_HOST=postgres
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASS}
+      - DB_NAME=${DB_NAME}
+      - DB_PORT=5432
+      - ADMIN_SECRET=${ADMIN_SECRET}
+      - LOCAL_MD_ROOT=${LOCAL_MD_ROOT}
+      - LOCAL_IMAGE_ROOT=${LOCAL_IMAGE_ROOT}
+      - GIN_MODE=release
+    volumes:
+      - ./public:/root/public
+    restart: unless-stopped
+
   postgres:
     image: postgres:15-alpine
     container_name: personal-website-db
@@ -7,7 +28,7 @@ services:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASS}
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped

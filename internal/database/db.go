@@ -16,7 +16,11 @@ var DB *gorm.DB
 
 func ConnectDatabase() {
 	if err := godotenv.Load(); err != nil {
-		log.Println("Error reading .env file")
+		log.Println("Warning: .env file not found. Relying on system environment variables.")
+	}
+
+	if os.Getenv("DB_HOST") == "" {
+		log.Fatal("Error: DB_HOST is not set")
 	}
 
 	dsn := getDSNFromEnv()
