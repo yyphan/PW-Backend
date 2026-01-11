@@ -17,7 +17,7 @@ services:
       - LOCAL_IMAGE_ROOT=${LOCAL_IMAGE_ROOT}
       - GIN_MODE=release
     volumes:
-      - ./public:/root/public
+      - ${STORAGE_PATH}:/root/public
     restart: unless-stopped
 
   postgres:
