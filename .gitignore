@@ -33,3 +33,7 @@ coverage.html
 
 dist/
 tmp/
+
+public/images/*
+!public/images/.gitkeep
+
