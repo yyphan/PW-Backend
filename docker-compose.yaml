@@ -11,7 +11,7 @@ services:
       - DB_USER=${DB_USER}
       - DB_PASS=${DB_PASS}
       - DB_NAME=${DB_NAME}
-      - DB_PORT=5432
+      - DB_PORT=${DB_PORT}
       - ADMIN_SECRET=${ADMIN_SECRET}
       - LOCAL_MD_ROOT=${LOCAL_MD_ROOT}
       - LOCAL_IMAGE_ROOT=${LOCAL_IMAGE_ROOT}
@@ -28,10 +28,24 @@ services:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASS}
     ports:
-      - "127.0.0.1:5432:5432"
+      - "127.0.0.1:${DB_PORT}:${DB_PORT}"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  migrate:
+    image: migrate/migrate
+    volumes:
+      - ./migrations:/migrations
+    command: -path=/migrations/ -database "postgres://${DB_USER}:${DB_PASS}@postgres:${DB_PORT}/${DB_NAME}?sslmode=disable" up
+    depends_on:
+      postgres:
+        condition: service_healthy
 
 volumes:
   postgres_data:
